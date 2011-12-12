@@ -1,0 +1,8 @@
+#+TITLE: Guess-Tex-Master
+#+AUTHOR: Matthew L. Fidler
+* Introduction
+Guess TeX Master from either the open files or files in the
+current directory.  Then optionally set the master file via a
+local variable.  This was based off of
+http://www.emacswiki.org/emacs/AUCTeX#toc18, but I wanted to change it
+to suit my needs.
