@@ -5,12 +5,12 @@
 ;; Author: Unknown & Matthew L. Fidler
 ;; Maintainer: Matthew L. Fidler
 ;; Created: Mon Dec 12 14:12:47 2011 (-0600)
-;; Version:  0.1
-;; Last-Updated: Mon Dec 12 14:52:03 2011 (-0600)
+;; Version:  0.01
+;; Last-Updated: Mon Dec 12 15:15:52 2011 (-0600)
 ;;           By: Matthew L. Fidler
-;;     Update #: 29
-;; URL: 
-;; Keywords: 
+;;     Update #: 53
+;; URL: https://github.com/mlf176f2/guess-tex-master.el
+;; Keywords: AucTeX TeX-master
 ;; Compatibility: 
 ;; 
 ;; Features that might be required by this library:
@@ -21,11 +21,14 @@
 ;; 
 ;;; Commentary: 
 ;; 
-;; 
+;;  
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Change Log:
+;; 12-Dec-2011    Matthew L. Fidler  
+;;    Last-Updated: Mon Dec 12 14:55:15 2011 (-0600) #31 (Matthew L. Fidler)
+;;    Initial release
 ;; 
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,22 +77,10 @@ local variable."
 
 (defun guess-TeX-master-from-files (filename)
   "Guess TeX master from egrep list of files"
-  (let ((egrep (executable-find "egrep"))
+  (let (val
         candidates)
-    (when egrep
-      (setq candidates
-            (split-string
-             (shell-command-to-string
-              (concat egrep
-                      " -l \"\\\\\\\\("
-                      (mapconcat (lambda(x) x)
-                                 guess-TeX-master-includes "|")
-                      "){" filename "([.]tex)?}\" *.tex")) "\n" t))
-      (if (stringp candidates)
-          (symbol-value 'candidates)
-        (message "Multiple Candidates: %s" candidates)
-        (setq candidates nil)))
-    (symbol-value 'candidates)))
+    ;; Unimplemented.
+  (symbol-value 'candidates))
 
 (defun guess-TeX-master-from-buffer (filename)
   "Guesses TeX master from open .tex buffers"
@@ -108,15 +99,11 @@ local variable."
                     (setq candidate file))))))))
     (symbol-value 'candidate)))
 
-(defun e ()
-  (interactive)
-  (let (guess-TeX-master-from-buffers)
-   (guess-TeX-master (buffer-file-name))))
-
 ;;;###autoload
 (defun guess-TeX-master ()
   "Guess the master file for FILENAME"
-  (let ((candidate nil)
+  (let* ((candidate nil)
+        (filename (buffer-file-name))
         (filename (file-name-sans-extension (file-name-nondirectory filename))))
     
     (when guess-TeX-master-from-buffers
@@ -124,10 +111,12 @@ local variable."
     (setq candidate (guess-TeX-master-from-files filename))
     (when candidate
       (message "TeX master document: %s" (file-name-nondirectory candidate))
-      (set (make-local-variable 'TeX-master) candidate))))
+      (unless TeX-master
+        (set (make-local-variable 'TeX-master) candidate)))))
 
 ;;;###autoload
 (add-hook 'LaTeX-mode-hook 'guess-TeX-master)
+;;;###autoload
 (add-hook 'TeX-mode-hook 'guess-TeX-master)
 
 (provide 'guess-tex-master)
