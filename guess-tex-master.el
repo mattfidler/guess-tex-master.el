@@ -6,9 +6,9 @@
 ;; Maintainer: Matthew L. Fidler
 ;; Created: Mon Dec 12 14:12:47 2011 (-0600)
 ;; Version:  0.01
-;; Last-Updated: Mon Dec 12 15:15:52 2011 (-0600)
+;; Last-Updated: Mon Dec 12 15:17:17 2011 (-0600)
 ;;           By: Matthew L. Fidler
-;;     Update #: 53
+;;     Update #: 55
 ;; URL: https://github.com/mlf176f2/guess-tex-master.el
 ;; Keywords: AucTeX TeX-master
 ;; Compatibility: 
@@ -26,7 +26,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Change Log:
-;; 12-Dec-2011    Matthew L. Fidler  
+;; 12-Dec-2011    Matthew L. Fidler
 ;;    Last-Updated: Mon Dec 12 14:55:15 2011 (-0600) #31 (Matthew L. Fidler)
 ;;    Initial release
 ;; 
@@ -80,7 +80,7 @@ local variable."
   (let (val
         candidates)
     ;; Unimplemented.
-  (symbol-value 'candidates))
+  (symbol-value 'candidates)))
 
 (defun guess-TeX-master-from-buffer (filename)
   "Guesses TeX master from open .tex buffers"
