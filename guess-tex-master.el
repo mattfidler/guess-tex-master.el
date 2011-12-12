@@ -5,10 +5,10 @@
 ;; Author: Unknown & Matthew L. Fidler
 ;; Maintainer: Matthew L. Fidler
 ;; Created: Mon Dec 12 14:12:47 2011 (-0600)
-;; Version:  0.01
-;; Last-Updated: Mon Dec 12 15:17:17 2011 (-0600)
+;; Version:  0.02
+;; Last-Updated: Mon Dec 12 15:31:35 2011 (-0600)
 ;;           By: Matthew L. Fidler
-;;     Update #: 55
+;;     Update #: 56
 ;; URL: https://github.com/mlf176f2/guess-tex-master.el
 ;; Keywords: AucTeX TeX-master
 ;; Compatibility: 
@@ -26,6 +26,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Change Log:
+;; 12-Dec-2011    Matthew L. Fidler  
+;;    Last-Updated: Mon Dec 12 15:17:17 2011 (-0600) #55 (Matthew L. Fidler)
+;;    Bugfix
 ;; 12-Dec-2011    Matthew L. Fidler
 ;;    Last-Updated: Mon Dec 12 14:55:15 2011 (-0600) #31 (Matthew L. Fidler)
 ;;    Initial release
@@ -77,10 +80,9 @@ local variable."
 
 (defun guess-TeX-master-from-files (filename)
   "Guess TeX master from egrep list of files"
-  (let (val
-        candidates)
+  (let (val master)
     ;; Unimplemented.
-  (symbol-value 'candidates)))
+  (symbol-value 'master)))
 
 (defun guess-TeX-master-from-buffer (filename)
   "Guesses TeX master from open .tex buffers"
