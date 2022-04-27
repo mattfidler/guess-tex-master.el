@@ -83,6 +83,17 @@ grep."
   :type 'boolean
   :group 'guess-TeX-master)
 
+(defcustom guess-TeX-master-default t
+  "Default guess if all else fails.
+Only applies if the guess-TeX-master-from-buffers and
+guess-TeX-master-from-files both fail.  Same choices as TeX-master variable."
+  :type '(choice (const :tag "Query" nil)
+                 (const :tag "This file" t)
+                 (const :tag "Shared" shared)
+                 (const :tag "Dwim" dwim)
+                 (string :format "%v"))
+  :group 'guess-TeX-master)
+
 (defvar TeX-master)
 
 (defun guess-TeX-master-from-files (filename)
@@ -127,7 +138,7 @@ variable TeX-master according to the guess, provided TeX-master is non-nil."
       (when guess-TeX-master-from-files
         (setq candidate (guess-TeX-master-from-files filename))))
     (unless candidate
-      (setq candidate TeX-master))
+      (setq candidate guess-TeX-master-default))
     (when (stringp candidate)
       (message "TeX master document: %s" (file-name-nondirectory candidate)))
     (unless TeX-master
