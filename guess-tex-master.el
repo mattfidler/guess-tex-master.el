@@ -1,4 +1,4 @@
-;;; guess-tex-master.el --- Guess LaTeX Master File
+;;; guess-tex-master.el --- Guess LaTeX Master File -*- lexical-binding: t; -*-
 ;; 
 ;; Filename: guess-tex-master.el
 ;; Description: Guess LaTeX Master File
@@ -11,7 +11,7 @@
 ;;     Update #: 56
 ;; URL: https://github.com/mlf176f2/guess-tex-master.el
 ;; Keywords: AucTeX TeX-master
-;; Compatibility: 
+;; Compatibility:
 ;; 
 ;; Features that might be required by this library:
 ;;
@@ -19,7 +19,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
-;;; Commentary: 
+;;; Commentary:
 ;; 
 ;;  
 ;; 
@@ -56,42 +56,44 @@
 ;;; Code:
 
 (defgroup guess-TeX-master nil
-  "Guess TeX Master from either the open files or files in the
-current directory.  Then optionally set the master file via a
-local variable."
+  "Guess TeX Master from either the open buffers or local files.
+Then optionally set the master file via a local variable."
   :group 'AUCTeX)
 
 (defcustom guess-TeX-master-includes '("input"
                                        "include"
                                        "makerubric")
-  "List of known LaTex includes"
+  "List of known LaTex includes."
   :type '(repeat (string :tag "Include Tag"))
   :group 'guess-TeX-master)
 
 (defcustom guess-TeX-master-from-buffers t
-  "Guess LaTeX Master from current buffer?"
+  "Guess LaTeX Master from currently open buffers."
   :type 'boolean
   :group 'guess-TeX-master)
 
 (defcustom guess-TeX-master-from-files t
-  "After failing to guess the TeX master from buffers, guess LaTeX master from current files? (Requires egrep)"
+  "Guess LaTeX Master from local files.
+Only applies if the guess-TeX-master-from-buffers fails.  Requires
+grep."
   :type 'boolean
   :group 'guess-TeX-master)
 
+(defvar TeX-master)
+
 (defun guess-TeX-master-from-files (filename)
-  "Guess TeX master from egrep list of files"
-  (let (val master)
+  "Guess TeX master for FILENAME from egrep list of files."
+  (let (master)
     ;; Unimplemented.
-  (symbol-value 'master)))
+    master))
 
 (defun guess-TeX-master-from-buffer (filename)
-  "Guesses TeX master from open .tex buffers"
+  "Guess TeX master for FILENAME from open .tex buffers."
   (let (candidate)
     (save-excursion
       (dolist (buffer (buffer-list))
         (with-current-buffer buffer
-          (let ((name (buffer-name))
-                (file buffer-file-name))
+          (let ((file buffer-file-name))
             (if (and file (string-match "\\.tex$" file))
                 (save-excursion
                   (goto-char (point-min))
@@ -99,11 +101,11 @@ local variable."
                                                    (regexp-opt guess-TeX-master-includes t)
                                                    "{" filename "\\([.]tex\\)?}") nil t)
                     (setq candidate file))))))))
-    (symbol-value 'candidate)))
+    candidate))
 
 ;;;###autoload
 (defun guess-TeX-master ()
-  "Guess the master file for FILENAME"
+  "Guess the master file for FILENAME."
   (let* ((candidate nil)
         (filename (buffer-file-name))
         (filename (file-name-sans-extension (file-name-nondirectory filename))))
