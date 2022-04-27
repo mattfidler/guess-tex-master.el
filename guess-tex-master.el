@@ -26,7 +26,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Change Log:
-;; 12-Dec-2011    Matthew L. Fidler  
+;; 12-Dec-2011    Matthew L. Fidler
 ;;    Last-Updated: Mon Dec 12 15:17:17 2011 (-0600) #55 (Matthew L. Fidler)
 ;;    Bugfix
 ;; 12-Dec-2011    Matthew L. Fidler
@@ -87,7 +87,7 @@ grep."
     ;; Unimplemented.
     master))
 
-(defun guess-TeX-master-from-buffer (filename)
+(defun guess-TeX-master-from-buffers (filename)
   "Guess TeX master for FILENAME from open .tex buffers."
   (let (candidate)
     (save-excursion
@@ -105,18 +105,23 @@ grep."
 
 ;;;###autoload
 (defun guess-TeX-master ()
-  "Guess the master file for FILENAME."
+  "Guess the master file for current buffer.
+Will check buffers, then files, then the TeX-master variable.  Sets a local
+variable TeX-master according to the guess, provided TeX-master is non-nil."
   (let* ((candidate nil)
-        (filename (buffer-file-name))
-        (filename (file-name-sans-extension (file-name-nondirectory filename))))
-    
+         (filename (buffer-file-name))
+         (filename (file-name-sans-extension (file-name-nondirectory filename))))
     (when guess-TeX-master-from-buffers
-      (setq candidate (guess-TeX-master-from-buffer filename)))
-    (setq candidate (guess-TeX-master-from-files filename))
-    (when candidate
-      (message "TeX master document: %s" (file-name-nondirectory candidate))
-      (unless TeX-master
-        (set (make-local-variable 'TeX-master) candidate)))))
+      (setq candidate (guess-TeX-master-from-buffers filename)))
+    (unless candidate
+      (when guess-TeX-master-from-files
+        (setq candidate (guess-TeX-master-from-files filename))))
+    (unless candidate
+      (setq candidate TeX-master))
+    (when (stringp candidate)
+      (message "TeX master document: %s" (file-name-nondirectory candidate)))
+    (unless TeX-master
+      (set (make-local-variable 'TeX-master) candidate))))
 
 ;;;###autoload
 (add-hook 'LaTeX-mode-hook 'guess-TeX-master)
