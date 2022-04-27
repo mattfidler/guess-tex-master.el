@@ -5,7 +5,7 @@
 ;; Author: Unknown & Matthew L. Fidler
 ;; Maintainer: Matthew L. Fidler
 ;; Created: Mon Dec 12 14:12:47 2011 (-0600)
-;; Version:  0.02
+;; Version:  0.3
 ;; Last-Updated: Mon Dec 12 15:31:35 2011 (-0600)
 ;;           By: Matthew L. Fidler
 ;;     Update #: 56
@@ -60,10 +60,14 @@
 Then optionally set the master file via a local variable."
   :group 'AUCTeX)
 
-(defcustom guess-TeX-master-includes '("input"
+(defcustom guess-TeX-master-includes '("import"
+                                       "input"
                                        "include"
+                                       "subimport"
                                        "makerubric")
-  "List of known LaTex includes."
+  "List of known LaTex includes.
+Supports both commands that directly input the file such as input or commands
+which take the path as a second argument such as import."
   :type '(repeat (string :tag "Include Tag"))
   :group 'guess-TeX-master)
 
@@ -94,13 +98,20 @@ grep."
       (dolist (buffer (buffer-list))
         (with-current-buffer buffer
           (let ((file buffer-file-name))
-            (if (and file (string-match "\\.tex$" file))
-                (save-excursion
-                  (goto-char (point-min))
-                  (when (re-search-forward (concat "\\\\"
-                                                   (regexp-opt guess-TeX-master-includes t)
-                                                   "{" filename "\\([.]tex\\)?}") nil t)
-                    (setq candidate file))))))))
+            (when (and file (string-match "\\.tex$" file))
+              (save-excursion
+                (goto-char (point-min))
+                (while (re-search-forward (concat "\\\\"
+                                                  (regexp-opt guess-TeX-master-includes t)
+                                                  "{\\([^}]*\\)\\(}{\\)?"
+                                                  (file-name-sans-extension (file-name-nondirectory filename))
+                                                  "\\([.]tex\\)?\\\"?}") nil t)
+                  (when (string= filename
+                                 (file-truename (string-replace "\"" ""
+                                                             (concat (file-name-directory file)
+                                                                     (match-string 2)
+                                                                     (file-name-nondirectory filename)))))
+                    (setq candidate file)))))))))
     candidate))
 
 ;;;###autoload
@@ -108,9 +119,8 @@ grep."
   "Guess the master file for current buffer.
 Will check buffers, then files, then the TeX-master variable.  Sets a local
 variable TeX-master according to the guess, provided TeX-master is non-nil."
-  (let* ((candidate nil)
-         (filename (buffer-file-name))
-         (filename (file-name-sans-extension (file-name-nondirectory filename))))
+  (let ((candidate nil)
+        (filename (buffer-file-name)))
     (when guess-TeX-master-from-buffers
       (setq candidate (guess-TeX-master-from-buffers filename)))
     (unless candidate
