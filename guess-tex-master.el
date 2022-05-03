@@ -129,9 +129,10 @@ guess-TeX-master-from-files both fail.  Same choices as TeX-master variable."
 
 ;;;###autoload
 (defun guess-TeX-master ()
-  "Guess the master file for current buffer.
+  "Guess the master file for current buffer provided TeX-master is non-nil.
 Will check buffers, then files, then the TeX-master variable.  Sets a local
-variable TeX-master according to the guess, provided TeX-master is non-nil."
+variable TeX-master according to the guess."
+  (unless TeX-master
     (let ((candidate nil)
           (filename (buffer-file-name)))
       (when guess-TeX-master-from-buffers
@@ -143,7 +144,6 @@ variable TeX-master according to the guess, provided TeX-master is non-nil."
         (setq candidate guess-TeX-master-default))
       (when (stringp candidate)
         (message "TeX master document: %s" (file-name-nondirectory candidate)))
-    (unless TeX-master
       (set (make-local-variable 'TeX-master) candidate))))
 
 ;;;###autoload
