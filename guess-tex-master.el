@@ -107,22 +107,24 @@ guess-TeX-master-from-files both fail.  Same choices as TeX-master variable."
   (let (candidate)
     (save-excursion
       (dolist (buffer (buffer-list))
-        (with-current-buffer buffer
-          (let ((file buffer-file-name))
-            (when (and file (string-match "\\.tex$" file))
-              (save-excursion
-                (goto-char (point-min))
-                (while (re-search-forward (concat "\\\\"
-                                                  (regexp-opt guess-TeX-master-includes t)
-                                                  "{\\([^}]*\\)\\(}{\\)?"
-                                                  (file-name-sans-extension (file-name-nondirectory filename))
-                                                  "\\([.]tex\\)?\\\"?}") nil t)
-                  (when (string= filename
-                                 (file-truename (string-replace "\"" ""
-                                                             (concat (file-name-directory file)
-                                                                     (match-string 2)
-                                                                     (file-name-nondirectory filename)))))
-                    (setq candidate file)))))))))
+        (unless candidate
+          (with-current-buffer buffer
+            (let ((file buffer-file-name))
+              (when (and file (string-match "\\.tex$" file))
+                (save-excursion
+                  (goto-char (point-min))
+                  (while (and (not candidate)
+                              (re-search-forward (concat "\\\\"
+                                                         (regexp-opt guess-TeX-master-includes t)
+                                                         "{\\([^}]*\\)\\(}{\\)?"
+                                                         (file-name-sans-extension (file-name-nondirectory filename))
+                                                         "\\([.]tex\\)?\\\"?}") nil t))
+                    (when (string= filename
+                                   (file-truename (string-replace "\"" ""
+                                                                  (concat (file-name-directory file)
+                                                                          (match-string 2)
+                                                                          (file-name-nondirectory filename)))))
+                      (setq candidate file))))))))))
     candidate))
 
 ;;;###autoload
@@ -130,17 +132,17 @@ guess-TeX-master-from-files both fail.  Same choices as TeX-master variable."
   "Guess the master file for current buffer.
 Will check buffers, then files, then the TeX-master variable.  Sets a local
 variable TeX-master according to the guess, provided TeX-master is non-nil."
-  (let ((candidate nil)
-        (filename (buffer-file-name)))
-    (when guess-TeX-master-from-buffers
-      (setq candidate (guess-TeX-master-from-buffers filename)))
-    (unless candidate
-      (when guess-TeX-master-from-files
-        (setq candidate (guess-TeX-master-from-files filename))))
-    (unless candidate
-      (setq candidate guess-TeX-master-default))
-    (when (stringp candidate)
-      (message "TeX master document: %s" (file-name-nondirectory candidate)))
+    (let ((candidate nil)
+          (filename (buffer-file-name)))
+      (when guess-TeX-master-from-buffers
+        (setq candidate (guess-TeX-master-from-buffers filename)))
+      (unless candidate
+        (when guess-TeX-master-from-files
+          (setq candidate (guess-TeX-master-from-files filename))))
+      (unless candidate
+        (setq candidate guess-TeX-master-default))
+      (when (stringp candidate)
+        (message "TeX master document: %s" (file-name-nondirectory candidate)))
     (unless TeX-master
       (set (make-local-variable 'TeX-master) candidate))))
 
