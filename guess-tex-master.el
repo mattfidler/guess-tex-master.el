@@ -5,7 +5,7 @@
 ;; Author: Unknown & Matthew L. Fidler
 ;; Maintainer: Matthew L. Fidler
 ;; Created: Mon Dec 12 14:12:47 2011 (-0600)
-;; Version:  0.3
+;; Version:  0.4
 ;; Last-Updated: Mon Dec 12 15:31:35 2011 (-0600)
 ;;           By: Matthew L. Fidler
 ;;     Update #: 56
@@ -83,6 +83,23 @@ grep."
   :type 'boolean
   :group 'guess-TeX-master)
 
+(defcustom guess-TeX-master-from-files-up 0
+  "How many directory levels above current to start searching through files.
+The find executable is used to find .tex files, this variable controls how
+many ../ are inserted in the find path.  The guess-TeX-master-from-files-depth
+should probably be increased as well when changing this value."
+  :type 'natnum
+  :group 'guess-TeX-master)
+
+(defcustom guess-TeX-master-from-files-depth 1
+  "Maximum depth when searching through files.
+This controls the -maxdepth option of the find call.  Note that changing the
+guess-TeX-master-from-files-up variable influences the find path;
+guess-TeX-master-from-files-depth should probably be increased as well so the
+start folder is still among the searched objects."
+  :type 'natnum
+  :group 'guess-TeX-master)
+
 (defcustom guess-TeX-master-default t
   "Default guess if all else fails.
 Only applies if the guess-TeX-master-from-buffers and
@@ -97,10 +114,62 @@ guess-TeX-master-from-files both fail.  Same choices as TeX-master variable."
 (defvar TeX-master)
 
 (defun guess-TeX-master-from-files (filename)
-  "Guess TeX master for FILENAME from egrep list of files."
-  (let (master)
-    ;; Unimplemented.
-    master))
+  "Guess TeX master for FILENAME from local files using find and grep.
+Will execute find in guess-TeX-master-from-files-up directories above FILENAME
+with a -maxdepth of guess-TeX-master-from-files-depth.  Greps all .tex files
+that were found for includes that match FILENAME and returns the first candidate
+that matches."
+  (let ((candidate)
+        (files-list)
+        (files-path))
+    (when (and (executable-find "find") (executable-find "grep"))
+      (setq files-path
+            (make-string
+             (+ 1 (* 3 guess-TeX-master-from-files-up)) ?.))
+      (dotimes (i guess-TeX-master-from-files-up)
+        (store-substring files-path (+ 1 (* i 3)) "/"))
+      (setq files-list
+            (split-string
+             (shell-command-to-string
+              (concat "find "
+                      files-path
+                      " -maxdepth "
+                      (number-to-string guess-TeX-master-from-files-depth)
+                      " -type f -name \"*.tex\""))
+             "\n" t))
+      (when files-list
+        (dolist (file files-list)
+          (unless candidate
+            (let (includes-list)
+              (setq includes-list
+                    (split-string
+                     (shell-command-to-string
+                      (concat "grep -Eo \"[\\]("
+                              (mapconcat (lambda(x) x)
+                                         guess-TeX-master-includes "|")
+                              "){[^}]*(}{)?"
+                              (file-name-sans-extension (file-name-nondirectory filename))
+                              "([.]tex)?\\\"?}\" \""
+                              file
+                              "\""))
+                     "\n" t))
+              (when includes-list
+                (dolist (include includes-list)
+                  (unless candidate
+                    (string-match (concat "\\\\"
+                                          (regexp-opt guess-TeX-master-includes t)
+                                          "{\\([^}]*\\)\\(}{\\)?"
+                                          (file-name-sans-extension (file-name-nondirectory filename))
+                                          "\\([.]tex\\)?\\\"?}")
+                                  include)
+                    (when (string= filename
+                                   (file-truename (string-replace "\"" ""
+                                                                  (concat (file-name-directory filename)
+                                                                          (file-name-directory file)
+                                                                          (match-string 2 include)
+                                                                          (file-name-nondirectory filename)))))
+                      (setq candidate file))))))))))
+    candidate))
 
 (defun guess-TeX-master-from-buffers (filename)
   "Guess TeX master for FILENAME from open .tex buffers."
